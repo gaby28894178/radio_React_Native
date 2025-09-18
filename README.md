@@ -1,6 +1,12 @@
 # 📻 Radio Live App - FM LUZ
 
-Aplicación de radio en vivo con chat interactivo, múltiples temas de colores y base de datos PostgreSQL.
+Aplicación de radio en vivo con chat interactivo, múltiples temas de colores y sistema de chat sincronizado.
+
+## 🌐 Enlaces del Proyecto
+
+- **🔗 GitHub Repository:** [https://github.com/tu-usuario/radio_React_Native](https://github.com/tu-usuario/radio_React_Native)
+- **🚀 Vercel Deployment:** [https://tu-proyecto.vercel.app](https://tu-proyecto.vercel.app)
+- **📱 Demo en Vivo:** [http://localhost:8081](http://localhost:8081) (desarrollo local)
 
 ## 🚀 Características Principales
 
@@ -12,12 +18,13 @@ Aplicación de radio en vivo con chat interactivo, múltiples temas de colores y
 - Reconexión automática en caso de pérdida de señal
 
 ### 💬 **Chat en Vivo**
-- Sistema de chat en tiempo real
-- Persistencia en base de datos PostgreSQL
-- Colores únicos automáticos por usuario
-- Formato: "correo@ejemplo.com dice: mensaje"
-- Historial completo de mensajes
-- Timestamps con fecha y hora
+- Sistema de chat en tiempo real sincronizado
+- Persistencia con localStorage
+- Nicknames automáticos basados en iniciales del email
+- Fondos diferenciados para mensajes propios y de otros
+- Formato: "[NK]: mensaje" (donde NK son las iniciales)
+- Sincronización entre pestañas del navegador
+- Protección de privacidad del email
 
 ### 🎨 **Sistema de Temas**
 - **13 temas de colores disponibles:**
@@ -68,37 +75,15 @@ cd RADIO
 npm install
 ```
 
-### 3. Configurar Base de Datos
+### 3. Configuración del Chat
 
-1. **Instalar PostgreSQL:**
-   - Descargar desde: https://www.postgresql.org/download/
-   - Recordar la contraseña del usuario `postgres`
+El sistema de chat no requiere configuración adicional ya que utiliza localStorage para la persistencia y sincronización en tiempo real.
 
-2. **Crear la base de datos:**
-   ```sql
-   psql -U postgres
-   CREATE DATABASE radio_chat;
-   \c radio_chat;
-   ```
-
-3. **Ejecutar el esquema:**
-   ```bash
-   psql -U postgres -d radio_chat -f src/database/schema.sql
-   ```
-
-4. **Configurar variables de entorno:**
-   ```bash
-   cp .env.example .env
-   ```
-   
-   Editar `.env` con tus datos:
-   ```env
-   DB_HOST=localhost
-   DB_PORT=5432
-   DB_NAME=radio_chat
-   DB_USER=postgres
-   DB_PASSWORD=tu_contraseña
-   ```
+**Características del chat:**
+- Almacenamiento local automático
+- Sincronización entre pestañas
+- Nicknames basados en iniciales del email
+- No requiere base de datos externa
 
 ### 4. Iniciar la Aplicación
 
@@ -122,9 +107,10 @@ npm run web
 ### 💬 **Usar el Chat**
 
 1. **Abrir chat:** Presionar el botón "Chat en Vivo"
-2. **Configurar email:** Ingresar tu email la primera vez
+2. **Configurar email:** Ingresar tu email la primera vez (se genera nickname automático)
 3. **Enviar mensajes:** Escribir y presionar Enter o el botón enviar
-4. **Ver historial:** Los mensajes se cargan automáticamente
+4. **Ver historial:** Los mensajes se sincronizan automáticamente
+5. **Identificación:** Tus mensajes tienen fondo gris oscuro, los de otros gris claro
 
 ### 🎨 **Cambiar Temas**
 
@@ -148,15 +134,17 @@ npm run web
 - **Expo AV** para audio streaming
 - **AsyncStorage** para persistencia local
 
-### **Backend/Base de Datos**
-- **PostgreSQL** para almacenamiento de mensajes
-- **API REST** para operaciones de chat
-- **Conexión directa** desde el frontend
+### **Sistema de Chat**
+- **localStorage** para persistencia local
+- **Storage Events** para sincronización en tiempo real
+- **SharedChatService** para gestión de mensajes compartidos
 
 ### **Servicios**
 - **AudioService:** Manejo del streaming de audio
-- **DatabaseService:** Conexión y operaciones con PostgreSQL
-- **ChatApi:** Endpoints para mensajes del chat
+- **DatabaseService:** Gestión de mensajes locales
+- **SharedChatService:** Sincronización entre pestañas
+- **StorageEventService:** Eventos de almacenamiento
+- **ChatApi:** API para operaciones de chat
 - **ThemeContext:** Gestión global de temas
 
 ## 📁 Estructura del Proyecto
@@ -227,14 +215,56 @@ const themes = {
 
 ## 🚀 Despliegue
 
-### **Desarrollo**
+### **Desarrollo Local**
 ```bash
 npm start
+# o para web específicamente:
+npm run web
 ```
 
-### **Construcción para Producción**
+### **Despliegue en Vercel**
+
+#### Configuración de Vercel (`vercel.json`)
+```json
+{
+  "installCommand": "npm install --legacy-peer-deps",
+  "buildCommand": "npx expo export --platform web",
+  "outputDirectory": "dist",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
+```
+
+#### Archivos Ignorados (`.vercelignore`)
+```
+node_modules
+build
+dist
+.git
+.trae
+.log
+.figma
+```
+
+#### Comandos de Despliegue
 ```bash
-# Web
+# Instalar Vercel CLI
+npm i -g vercel
+
+# Desplegar
+vercel
+
+# Desplegar a producción
+vercel --prod
+```
+
+### **Construcción para Otras Plataformas**
+```bash
+# Web (local)
 npm run build:web
 
 # Android
@@ -244,10 +274,10 @@ eas build --platform android
 eas build --platform ios
 ```
 
-### **Base de Datos en Producción**
-- Usar servicios como AWS RDS, Google Cloud SQL, o Heroku Postgres
-- Configurar SSL para conexiones seguras
-- Implementar respaldos automáticos
+### **Sistema de Chat**
+- Utiliza localStorage para persistencia
+- Sincronización en tiempo real entre pestañas
+- No requiere base de datos externa para funcionar
 
 ## 🐛 Solución de Problemas
 
@@ -257,9 +287,9 @@ eas build --platform ios
 - Revisar permisos de audio
 
 ### **Chat no funciona**
-- Verificar conexión a PostgreSQL
-- Comprobar variables de entorno
-- Revisar logs de la base de datos
+- Verificar que localStorage esté habilitado
+- Comprobar permisos del navegador
+- Revisar la consola del navegador para errores
 
 ### **Temas no se guardan**
 - Verificar permisos de AsyncStorage
@@ -283,7 +313,31 @@ Para soporte técnico o preguntas:
 - Crear un issue en GitHub
 - Contactar al equipo de desarrollo
 
+## 📚 Referencias Útiles
+
+### **Documentación Técnica**
+- [Expo Documentation](https://docs.expo.dev/)
+- [React Native Documentation](https://reactnative.dev/docs/getting-started)
+- [Vercel Deployment Guide](https://vercel.com/docs)
+- [TypeScript Handbook](https://www.typescriptlang.org/docs/)
+
+### **APIs y Servicios**
+- [Expo AV (Audio/Video)](https://docs.expo.dev/versions/latest/sdk/av/)
+- [AsyncStorage](https://docs.expo.dev/versions/latest/sdk/async-storage/)
+- [React Navigation](https://reactnavigation.org/docs/getting-started)
+
+### **Configuración de Vercel**
+- [Vercel CLI](https://vercel.com/docs/cli)
+- [Vercel Configuration](https://vercel.com/docs/project-configuration)
+- [Custom Build Commands](https://vercel.com/docs/build-step#build-command)
+
+### **Herramientas de Desarrollo**
+- [Expo CLI](https://docs.expo.dev/workflow/expo-cli/)
+- [EAS Build](https://docs.expo.dev/build/introduction/)
+- [Expo Web](https://docs.expo.dev/workflow/web/)
+
 ---
 
-**Desarrollado con ❤️ para FM LUZ**# radio_React_Native
-# radio_React_Native
+**Desarrollado con ❤️ para FM LUZ**
+
+*Radio FM LUZ - Conectando corazones a través de la música cristiana*
